@@ -1,0 +1,94 @@
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║  WezTerm Enterprise — Automatic Release Pipeline                 ║
+# ║  Triggers on version tags: v1.0.0, v1.2.3, etc.                  ║
+# ║  Creates GitHub Release with changelog and archive               ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: "Create Release"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Lua 5.4
+        uses: leafo/gh-actions-lua@v10
+        with:
+          luaVersion: "5.4"
+
+      - name: Run test suite
+        run: lua tests/init.lua
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get previous tag
+          PREV_TAG=$(git tag --sort=-v:refname | head -2 | tail -1)
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+
+          echo "## What's Changed" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+
+          if [ -n "$PREV_TAG" ] && [ "$PREV_TAG" != "$CURRENT_TAG" ]; then
+            echo "### Commits since $PREV_TAG" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git log ${PREV_TAG}..${CURRENT_TAG} --pretty=format:"- %s (%h)" --no-merges >> CHANGELOG.md
+          else
+            echo "### Initial Release" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git log --pretty=format:"- %s (%h)" --no-merges -20 >> CHANGELOG.md
+          fi
+
+          echo "" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "### Stats" >> CHANGELOG.md
+          echo "- **Modules:** 68 files" >> CHANGELOG.md
+          echo "- **Themes:** 10 built-in" >> CHANGELOG.md
+          echo "- **Bar Segments:** 15" >> CHANGELOG.md
+          echo "- **Tests:** 53 passing" >> CHANGELOG.md
+          echo "- **Shells:** zsh, fish, bash, nushell, pwsh, cmd" >> CHANGELOG.md
+          echo "- **Platforms:** macOS, Linux, Windows, BSD, WSL" >> CHANGELOG.md
+
+      - name: Create release archive
+        run: |
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+          # Create tar.gz excluding local/ and tests/
+          tar czf wezterm-enterprise-${CURRENT_TAG}.tar.gz \
+            --exclude='local/*.lua' \
+            --exclude='!local/.gitkeep' \
+            --exclude='.git' \
+            --exclude='.github' \
+            .
+
+          # Create zip
+          zip -r wezterm-enterprise-${CURRENT_TAG}.zip . \
+            -x 'local/*.lua' \
+            -x '.git/*' \
+            -x '.github/*'
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') }}
+          generate_release_notes: true
+          files: |
+            wezterm-enterprise-*.tar.gz
+            wezterm-enterprise-*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

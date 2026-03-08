@@ -1,0 +1,32 @@
+# Local overrides — NEVER commit
+local/*.lua
+!local/.gitkeep
+
+# Secrets
+*.secret
+*.pem
+*.key
+
+# Logs
+*.log
+logs/
+
+# Temp files
+/tmp/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.bak
+
+# Lua build artifacts
+*.luac
+luac.out

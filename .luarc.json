@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+  "runtime": {
+    "version": "Lua 5.4",
+    "path": ["?.lua", "?/init.lua"]
+  },
+  "workspace": {
+    "library": [],
+    "checkThirdParty": false
+  },
+  "diagnostics": {
+    "globals": ["wezterm"],
+    "disable": ["lowercase-global"]
+  },
+  "telemetry": {
+    "enable": false
+  },
+  "hint": {
+    "enable": true,
+    "setType": true,
+    "paramName": "All"
+  }
+}

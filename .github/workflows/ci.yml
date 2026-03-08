@@ -1,0 +1,50 @@
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║  WezTerm Enterprise — CI Pipeline                                ║
+# ║  Runs on every push and pull request                             ║
+# ║  Tests: Lua unit tests + StyLua formatting check                 ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: "Tests & Lint"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        lua-version: ["5.4"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Lua ${{ matrix.lua-version }}
+        uses: leafo/gh-actions-lua@v10
+        with:
+          luaVersion: ${{ matrix.lua-version }}
+
+      - name: Run test suite
+        run: lua tests/init.lua
+
+  stylua:
+    name: "StyLua Format Check"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run StyLua check
+        uses: JohnnyMorganz/stylua-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: latest
+          args: --check .
