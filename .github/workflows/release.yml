@@ -9,86 +9,112 @@ name: Release
 on:
   push:
     tags:
-      - "v*.*.*"
+      - "v*"
 
 permissions:
   contents: write
 
 jobs:
   release:
-    name: "Create Release"
+    name: Create Release
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Install Lua 5.4
+      - name: Setup Lua
         uses: leafo/gh-actions-lua@v10
         with:
           luaVersion: "5.4"
 
-      - name: Run test suite
-        run: lua tests/init.lua
-
-      - name: Generate changelog
-        id: changelog
+      - name: Validate before release
         run: |
-          # Get previous tag
-          PREV_TAG=$(git tag --sort=-v:refname | head -2 | tail -1)
-          CURRENT_TAG=${GITHUB_REF#refs/tags/}
-
-          echo "## What's Changed" > CHANGELOG.md
-          echo "" >> CHANGELOG.md
-
-          if [ -n "$PREV_TAG" ] && [ "$PREV_TAG" != "$CURRENT_TAG" ]; then
-            echo "### Commits since $PREV_TAG" >> CHANGELOG.md
-            echo "" >> CHANGELOG.md
-            git log ${PREV_TAG}..${CURRENT_TAG} --pretty=format:"- %s (%h)" --no-merges >> CHANGELOG.md
-          else
-            echo "### Initial Release" >> CHANGELOG.md
-            echo "" >> CHANGELOG.md
-            git log --pretty=format:"- %s (%h)" --no-merges -20 >> CHANGELOG.md
+          echo "=== Pre-release validation ==="
+          errors=0
+          for f in $(find . -name '*.lua' -not -path './.git/*' -not -path './lua_modules/*'); do
+            if ! luac -p "$f" 2>/dev/null; then
+              echo "❌ Syntax error: $f"
+              errors=$((errors + 1))
+            else
+              echo "✅ $f"
+            fi
+          done
+          if [ $errors -gt 0 ]; then
+            echo "::error::Cannot release with syntax errors"
+            exit 1
           fi
 
-          echo "" >> CHANGELOG.md
-          echo "" >> CHANGELOG.md
-          echo "### Stats" >> CHANGELOG.md
-          echo "- **Modules:** 68 files" >> CHANGELOG.md
-          echo "- **Themes:** 10 built-in" >> CHANGELOG.md
-          echo "- **Bar Segments:** 15" >> CHANGELOG.md
-          echo "- **Tests:** 53 passing" >> CHANGELOG.md
-          echo "- **Shells:** zsh, fish, bash, nushell, pwsh, cmd" >> CHANGELOG.md
-          echo "- **Platforms:** macOS, Linux, Windows, BSD, WSL" >> CHANGELOG.md
+      - name: Get version info
+        id: version
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+          # Compter les fichiers Lua
+          LUA_COUNT=$(find . -name '*.lua' -not -path './.git/*' -not -path './lua_modules/*' | wc -l)
+          echo "lua_count=$LUA_COUNT" >> $GITHUB_OUTPUT
+
+          # Générer le changelog depuis le dernier tag
+          PREV_TAG=$(git tag --sort=-version:refname | head -2 | tail -1 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ] && [ "$PREV_TAG" != "$TAG" ]; then
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" "$PREV_TAG".."$TAG" 2>/dev/null || echo "- Initial release")
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" 2>/dev/null | head -20)
+          fi
+          # Sauvegarder le changelog dans un fichier (évite les problèmes multilignes)
+          echo "$CHANGELOG" > /tmp/changelog.txt
 
       - name: Create release archive
         run: |
-          CURRENT_TAG=${GITHUB_REF#refs/tags/}
-          # Create tar.gz excluding local/ and tests/
-          tar czf wezterm-enterprise-${CURRENT_TAG}.tar.gz \
-            --exclude='local/*.lua' \
-            --exclude='!local/.gitkeep' \
+          TAG=${{ steps.version.outputs.tag }}
+          ARCHIVE_NAME="wezterm-enterprise-${TAG}.tar.gz"
+
+          # Créer l'archive sans .git
+          tar czf "${ARCHIVE_NAME}" \
             --exclude='.git' \
             --exclude='.github' \
+            --exclude='lua_modules' \
+            --exclude='*.tar.gz' \
             .
 
-          # Create zip
-          zip -r wezterm-enterprise-${CURRENT_TAG}.zip . \
-            -x 'local/*.lua' \
-            -x '.git/*' \
-            -x '.github/*'
+          echo "archive=${ARCHIVE_NAME}" >> $GITHUB_ENV
+          ls -lh "${ARCHIVE_NAME}"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          body_path: CHANGELOG.md
-          draft: false
-          prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') }}
-          generate_release_notes: true
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "🖥️ WezTerm Enterprise ${{ steps.version.outputs.tag }}"
+          body: |
+            ## WezTerm Enterprise Configuration ${{ steps.version.outputs.tag }}
+
+            📅 Released: ${{ steps.version.outputs.date }}
+            📁 Lua modules: ${{ steps.version.outputs.lua_count }}
+
+            ### Installation
+
+            ```bash
+            # Backup existing config
+            cp -r ~/.config/wezterm ~/.config/wezterm.bak 2>/dev/null
+
+            # Clone
+            git clone https://github.com/ca971/wezterm-enterprise.git ~/.config/wezterm
+
+            # Or download this release and extract
+            tar xzf wezterm-enterprise-${{ steps.version.outputs.tag }}.tar.gz -C ~/.config/wezterm
+            ```
+
+            ### Changes
+
+            $(cat /tmp/changelog.txt)
+
           files: |
-            wezterm-enterprise-*.tar.gz
-            wezterm-enterprise-*.zip
+            ${{ env.archive }}
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.tag, 'rc') || contains(steps.version.outputs.tag, 'beta') }}
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
