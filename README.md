@@ -13,6 +13,8 @@ designed for professional developers and DevOps engineers.
 [![Lua](https://img.shields.io/badge/Lua-5.4%20·%20OOP-2C2D72?style=for-the-badge&logo=lua&logoColor=white)](https://www.lua.org/)
 [![License](https://img.shields.io/badge/License-MIT-F7DF1E?style=for-the-badge)](./LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-macOS%20·%20Linux%20·%20Windows%20·%20BSD%20·%20WSL-E95420?style=for-the-badge&logo=linux&logoColor=white)](#-cross-platform-support)
+[![CI](https://github.com/ca971/wezterm-enterprise/actions/workflows/ci.yml/badge.svg?style=for-the-badge)](https://github.com/ca971/wezterm-enterprise/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/ca971/wezterm-enterprise?style=for-the-badge&logo=github&label=Release&color=2ea043)](https://github.com/ca971/wezterm-enterprise/releases/latest)
 
 [![Modules](https://img.shields.io/badge/Modules-68-blue?style=flat-square&logo=hackthebox&logoColor=white)](#-project-structure)
 [![Themes](https://img.shields.io/badge/Themes-10-purple?style=flat-square&logo=palette&logoColor=white)](#-theme-gallery)
