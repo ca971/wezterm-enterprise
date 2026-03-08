@@ -16,7 +16,6 @@ designed for professional developers and DevOps engineers.
 
 [![Modules](https://img.shields.io/badge/Modules-68-blue?style=flat-square&logo=hackthebox&logoColor=white)](#-project-structure)
 [![Themes](https://img.shields.io/badge/Themes-10-purple?style=flat-square&logo=palette&logoColor=white)](#-theme-gallery)
-[![Tests](https://img.shields.io/badge/Tests-53%20Passing-success?style=flat-square&logo=checkmarx&logoColor=white)](#-testing)
 [![Segments](https://img.shields.io/badge/Bar%20Segments-15-orange?style=flat-square&logo=baremetrics&logoColor=white)](#-information-center-status-bar)
 [![Shells](https://img.shields.io/badge/Shells-6-cyan?style=flat-square&logo=gnubash&logoColor=white)](#-multi-shell-support)
 [![Maintained](https://img.shields.io/badge/Status-Active-success?style=flat-square)](https://github.com/ca971/wezterm-enterprise)
@@ -798,35 +797,6 @@ shell = {
 
 ---
 
-## 🧪 Testing
-
-> 53 tests across 4 suites — run from the config directory.
-
-```bash
-cd ~/.config/wezterm && lua tests/init.lua
-```
-
-```
-╔══════════════════════════════════════════════════════╗
-║  Suite: Lot 1: lib/*          14/14 ✅               ║
-║  Suite: Lot 2: core/*         10/10 ✅               ║
-║  Suite: Lot 3: bar/ev/hl/th   21/21 ✅               ║
-║  Integration:                   8/8 ✅               ║
-╠══════════════════════════════════════════════════════╣
-║  TOTAL:                       53/53 ✅               ║
-║  🏆 ALL TESTS PASSED                                 ║
-╚══════════════════════════════════════════════════════╝
-```
-
-| Suite | Coverage | Tests |
-| :--- | :--- | :---: |
-| `test_lib_loading.lua` | Class system, utilities, platform, cache, secrets, events | 14 |
-| `test_core_loading.lua` | Settings, colors, icons, fonts, tabs, multiplexer | 10 |
-| `test_lot3_loading.lua` | Bar segments, separators, themes, highlights, events | 21 |
-| `init.lua` (integration) | Full dependency chain, theme cycling, cross-module | 8 |
-
----
-
 ## ⚡ Architecture Deep Dive
 
 ### OOP Class System
@@ -933,7 +903,7 @@ or commercial purposes.
 
 <img src="https://raw.githubusercontent.com/wez/wezterm/main/assets/icon/wezterm-icon.svg" width="24" height="24" alt="WezTerm" />
 
-**Crafted with ❤️ by [ca971](https://github.com/ca971) (Christian ACHILLE), for developers and DevOps engineers.**
+**Crafted with ❤️ by [ca971](https://github.com/ca971) - Christian ACHILLE, for developers and DevOps engineers.**
 
 [⬆ Back to Top](#-wezterm-enterprise)
 
