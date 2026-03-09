@@ -29,7 +29,7 @@ designed for professional developers and DevOps engineers.
   <img src="assets/screenshot-dark.png" alt="WezTerm Enterprise — Status Bar & Themes" width="850" style="border-radius: 12px; border: 2px solid #30363d;">
 </picture>
 
-<br/>
+<br/><br/>
 
 [Features](#-key-features) •
 [Install](#-installation) •
