@@ -61,7 +61,6 @@ designed for professional developers and DevOps engineers.
 - [🎛️ Configuration & Settings Engine](#%EF%B8%8F-configuration--settings-engine)
 - [📁 Project Structure](#-project-structure)
 - [🐚 Multi-Shell Support](#-multi-shell-support)
-- [🧪 Testing](#-testing)
 - [⚡ Architecture Deep Dive](#-architecture-deep-dive)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
