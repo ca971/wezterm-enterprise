@@ -60,7 +60,7 @@ function Keybindings.build(wezterm, platform_info)
   local super = get_super_mod(platform_info)
 
   -- Leader key from settings
-  local leader_cfg = Settings.get("keys.leader", { key = "a", mods = "CTRL" })
+  local leader_cfg = Settings.get("keys.leader", { key = "Space", mods = "CTRL" })
   local leader_timeout = Settings.get("keys.leader_timeout_ms", 2000)
 
   -- Build key bindings
